@@ -20,9 +20,42 @@ def reset_form():
     tree.delete(*tree.get_children())
     reset_fields()
 
+def modify_record():
+    global name_strvar, email_strvar, contact_strvar, gender_strvar, dob, stream_strvar
+    current_item = tree.focus()
+    values = tree.item(current_item)
+    selection = values["values"]
+
+    if not tree.selection():
+        mb.showerror('Error!', 'Please select an item from the database')
+    else:
+        name = name_strvar.get()
+        email = email_strvar.get()
+        contact = contact_strvar.get()
+        gender = gender_strvar.get()
+        DOB = dob.get_date()
+        stream = stream_strvar.get()
+
+        if not all([name, email, contact, gender, DOB, stream]):
+            mb.showerror('Error!', "Please fill all the missing fields!!")
+        else:
+            try:
+                connector.execute(
+                    'UPDATE STUDENT_MANAGEMENT SET NAME=?, EMAIL=?, PHONE_NO=?, GENDER=?, DOB=?, STREAM=? WHERE STUDENT_ID=?',
+                    (name, email, contact, gender, DOB, stream, selection[0])
+                )
+                connector.commit()
+                mb.showinfo('Record modified', f"Record of {name} was successfully modified")
+                reset_fields()
+                display_records()
+            except:
+                mb.showerror('Wrong type', 'The type of the values entered is not accurate. Please note that the contact field can only contain numbers')
+
+
 def display_records():
     tree.delete(*tree.get_children())
-    curr = connector.execute('SELECT * FROM STUDENT_MANAGEMENT')
+    #curr = connector.execute('SELECT * FROM STUDENT_MANAGEMENT')
+    curr = connector.execute('SELECT STUDENT_ID,NAME,EMAIL,PHONE_NO,GENDER,DOB,STREAM FROM STUDENT_MANAGEMENT')
     data = curr.fetchall()
 
     for records in data:
@@ -76,22 +109,22 @@ def view_record():
 
     date = datetime.date(int(selection[5][:4]), int(selection[5][5:7]), int(selection[5][8:]))
     name_strvar.set(selection[1])
-    contact_strvar.set(selection[2])
-    email_strvar.set(selection[3])
+    email_strvar.set(selection[2])
+    contact_strvar.set(selection[3])
     gender_strvar.set(selection[4])
     dob.set_date(date)
     stream_strvar.set(selection[6])
 
 def logout():
     main.destroy()  
-    subprocess.run(["python", "C://Users//rajom//OneDrive//Desktop//login1.py"])
+    subprocess.run(["python", "C://Users//Om Raj//OneDrive//Desktop//hackerthon//login1.py"])
 
 main = Tk()
 main.title('DataFlair Student Management System')
 main.geometry('1100x720')
 main.resizable(0, 0)
 
-image = PhotoImage(file="C:\\Users\\rajom\\Downloads\\th.png")  
+image = PhotoImage(file="C://Users//Om Raj//OneDrive//Desktop//hackerthon//th.png")
 lf_bg = 'white' 
 cf_bg = 'firebrick' 
 
@@ -115,8 +148,8 @@ right_frame.place(relx=0.4, y=30, relheight=1, relwidth=0.6)
 image_label = Label(left_frame, image=image)
 image_label.place(x=0, rely=0.03)
 Label(left_frame, text="Name", font='labelfont', bg=lf_bg).place(relx=0.375, rely=0.26)
-Label(left_frame, text="Contact Number", font='labelfont', bg=lf_bg).place(relx=0.175, rely=0.36)
-Label(left_frame, text="Email Address", font='labelfont', bg=lf_bg).place(relx=0.2, rely=0.46)
+Label(left_frame, text="Email Address", font='labelfont', bg=lf_bg).place(relx=0.175, rely=0.36)
+Label(left_frame, text="Contact Number", font='labelfont', bg=lf_bg).place(relx=0.2, rely=0.46)
 Label(left_frame, text="Gender", font='labelfont', bg=lf_bg).place(relx=0.3, rely=0.564)
 Label(left_frame, text="Date of Birth (DOB)", font='labelfont', bg=lf_bg).place(relx=0.1, rely=0.679)
 Label(left_frame, text="Course", font='labelfont', bg=lf_bg).place(relx=0.3, rely=0.755)
@@ -137,6 +170,8 @@ Button(center_frame, text='Delete Record', font='labelfont', command=remove_reco
 Button(center_frame, text='View Record', font='labelfont', command=view_record, width=15).place(relx=0.1, rely=0.35)
 Button(center_frame, text='Reset Fields', font='labelfont', command=reset_fields, width=15).place(relx=0.1, rely=0.45)
 Button(center_frame, text='Delete database', font='labelfont', command=reset_form, width=15).place(relx=0.1, rely=0.55)
+Button(center_frame, text='Modify', font='labelfont', command=modify_record, width=15).place(relx=0.1, rely=0.65)
+
 
 Label(right_frame, text='Students Records', font='headlabelfont', bg='red', fg='LightCyan').pack(side=TOP, fill=X)
 
@@ -153,8 +188,8 @@ tree.config(yscrollcommand=Y_scroller.set, xscrollcommand=X_scroller.set)
 
 tree.heading('Student ID', text='ID', anchor=CENTER)
 tree.heading('Name', text='Name', anchor=CENTER)
-tree.heading('Email Address', text='Phone No', anchor=CENTER)
-tree.heading('Contact Number', text='Email ID', anchor=CENTER)
+tree.heading('Email Address', text='Email ID', anchor=CENTER)
+tree.heading('Contact Number', text='Phone No', anchor=CENTER)
 tree.heading('Gender', text='Gender', anchor=CENTER)
 tree.heading('Date of Birth', text='DOB', anchor=CENTER)
 tree.heading('Stream', text='Course', anchor=CENTER)
